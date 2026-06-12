@@ -1,9 +1,11 @@
 #include "network_interface.h"
 #include "capture.h"
+#include "ethernet.h"
 #include "logger.h" //Подключить логгирование на локальный хост в дальнейшем
 #include <iostream>
 
 int main() {
+    EthernetParser eth_parser;
     std::string iface = findWorkingInterface();
     if (iface.empty()) {
         std::cerr << "Не найден рабочий интерфейс" << std::endl;//Заменить
@@ -13,9 +15,10 @@ int main() {
     std::cerr << "Не найден рабочий интерфейс" << std::endl;//Заменить
 
     Capture capture(iface);
-    capture.start([](const u_char* packet, int len) {
-      
+    capture.start([&eth_parser](const u_char* packet, int len) {
+      eth_parser.parse(packet, len);
     });
-    
+
+    capture.stop();
     return 0;
 }
