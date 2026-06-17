@@ -1,7 +1,54 @@
 #include <iostream>
+#include <cstdint>
 #include "ip.h"
+#include "gre.h"
 
+void IPParser::parse(const unsigned char* packet, size_t len, bool isV4) {
+  TCPParser tcp_p; // Дописать
+  UDPParser udp_p; // Дописать
+  SCTPParser sctp_p; // Дописать
+  GREParser gre_p;
+  if (isV4) {
+    if (len < 20) {
+      std::cerr << "Ошибка парсинга IPv4: недостаточно данных в пакете" << std::endl;
+      return;
+    }
+    uint8_t first_byte = packet[0];
+    uint8_t ihl = first_byte & 0x0F;
+    if (ihl < 5) {
+      std::cerr << "Ошибка парсинга IPv4: недостаточно данных в пакете" << std::endl;
+      return;
+    }
+    int ipLen = ihl * 4;
+    uint8_t protocol = packet[9];
+    if (protocol == 6) {
+      tcp_p.parse(packet + ipLen, len - ipLen);
+    }
 
-void IPParser::parse(const unsigned char* packet, size_t len) {
-  //Написать парсинг и понять логику дробления и жанглирования байтами
+    if (protocol == 17) {
+      udp_p.parse(packet + ipLen, len - ipLen);
+    }
+
+    if (protocol == 1) {
+      std::cout << "Отработал служебный протокол ICMP" << std::endl;
+    }
+
+    if (protocol == 132) {
+      sctp_p.parse(packet + ipLen, len - ipLen);
+    }
+
+    if (protocol == 44) {
+      std::cout << "Отработал фрагмент IPv6" << std::endl;
+    }
+
+    if (protocol == 47) {
+      gre_p.parse(packet, len, ipLen, isV4, depth + 1); // Продумать наиболее масштабированную проверку на глубину вложанности GRE
+    }
+
+  } else {
+    if (len < 40) {
+      std::cerr << "Ошибка парсинга IPv6: недостаточно данных в пакете" << std::endl;
+      return;
+    }
+  }
 }

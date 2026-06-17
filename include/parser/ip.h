@@ -3,8 +3,7 @@
 
 class IPParser {
   private:
-    TCPParser tcp_parser_;
+    TCPParser tcp_parser_; // Дописать
   public: 
-    void parse(const unsigned char* packet, size_t len);
+    void parse(const unsigned char* packet, size_t len, bool isV4);
 };
-//Описать TCP parse и оставшейся цепочки.
