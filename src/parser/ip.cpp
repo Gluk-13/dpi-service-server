@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstdint>
 #include "ip.h"
 #include "gre.h"
 #include "depth_guard.h"
