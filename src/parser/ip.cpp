@@ -2,12 +2,21 @@
 #include <cstdint>
 #include "ip.h"
 #include "gre.h"
+#include "depth_guard.h"
+#include <cstdint>
 
 void IPParser::parse(const unsigned char* packet, size_t len, bool isV4) {
-  TCPParser tcp_p; // Дописать
+  TCPParser tcp_p;
   UDPParser udp_p; // Дописать
   SCTPParser sctp_p; // Дописать
   GREParser gre_p;
+  DepthGuard depth_guard_;
+
+  if (!depth_guard_.nextLevel()) {
+    std::cerr << "Превышена глубина вложенности IP" << std::endl;
+    return;
+  }
+
   if (isV4) {
     if (len < 20) {
       std::cerr << "Ошибка парсинга IPv4: недостаточно данных в пакете" << std::endl;
@@ -42,7 +51,7 @@ void IPParser::parse(const unsigned char* packet, size_t len, bool isV4) {
     }
 
     if (protocol == 47) {
-      gre_p.parse(packet, len, ipLen, isV4, depth + 1); // Продумать наиболее масштабированную проверку на глубину вложанности GRE
+      gre_p.parse(packet, len, ipLen);
     }
 
   } else {
