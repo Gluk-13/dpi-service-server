@@ -8,7 +8,7 @@ void EthernetParser::parse(const unsigned char* packet, size_t len) {
     std::cerr << "Ошибка: недостаточно данных в пакете" << std::endl;
     return;
   }
-
+  int* depth = 0;
   uint16_t ethertype = (packet[12] << 8) | packet[13];
   bool isV4;
   if (ethertype == 0x0800) {
